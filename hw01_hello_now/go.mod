@@ -1,4 +1,4 @@
-module github.com/fixme_my_friend/hw01_hello_now
+module github.com/zakharov-pb/otus_golang/hw01_hello_now
 
 go 1.14
 
