@@ -1,6 +1,7 @@
 package hw04_lru_cache //nolint:golint,stylecheck
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -47,5 +48,33 @@ func TestList(t *testing.T) {
 			elems = append(elems, i.Value.(int))
 		}
 		require.Equal(t, []int{50, 30, 10, 40, 60, 80, 70}, elems)
+	})
+
+	t.Run("custom list test", func(t *testing.T) {
+		l := NewList()
+
+		l.PushFront(100)
+
+		require.Equal(t, l.Len(), 1)
+		require.Equal(t, 100, l.Front().Value)
+		require.Equal(t, 100, l.Back().Value)
+
+		l.Remove(l.Front())
+		require.Nil(t, l.Front())
+		require.Nil(t, l.Back())
+
+		l.PushBack(90)
+		l.PushFront(10)
+		listStr := "[10 90]"
+		require.Equal(t, listStr, fmt.Sprintf("%v", l))
+
+		i := &Item{Value: 90, Next: l.Front(), Prev: l.Back()}
+		l.Remove(i)
+		require.Equal(t, l.Len(), 2)
+		require.Equal(t, listStr, fmt.Sprintf("%v", l))
+
+		l.Remove(nil)
+		require.Equal(t, l.Len(), 2)
+		require.Equal(t, listStr, fmt.Sprintf("%v", l))
 	})
 }
