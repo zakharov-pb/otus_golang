@@ -9,6 +9,8 @@ type Item struct {
 	Value interface{}
 	Next  *Item
 	Prev  *Item
+
+	parent *list
 }
 
 type List interface {
@@ -19,6 +21,7 @@ type List interface {
 	PushBack(interface{}) *Item
 	Remove(*Item)
 	MoveToFront(*Item)
+	Clear()
 }
 
 type list struct {
@@ -44,7 +47,7 @@ func (l *list) Back() *Item {
 }
 
 func (l *list) PushFront(value interface{}) *Item {
-	i := &Item{Value: value, Next: nil, Prev: l.front}
+	i := &Item{Value: value, Next: nil, Prev: l.front, parent: l}
 	if l.front == nil {
 		l.back = i
 	} else {
@@ -52,11 +55,11 @@ func (l *list) PushFront(value interface{}) *Item {
 	}
 	l.front = i
 	l.count++
-	return nil
+	return i
 }
 
 func (l *list) PushBack(value interface{}) *Item {
-	i := &Item{Value: value, Next: l.back, Prev: nil}
+	i := &Item{Value: value, Next: l.back, Prev: nil, parent: l}
 	if l.back == nil {
 		l.front = i
 	} else {
@@ -64,11 +67,11 @@ func (l *list) PushBack(value interface{}) *Item {
 	}
 	l.back = i
 	l.count++
-	return nil
+	return i
 }
 
 func (l *list) checkItem(i *Item) bool {
-	if (i.Next != nil && i.Next.Prev != i) ||
+	if (i.parent != l) || (i.Next != nil && i.Next.Prev != i) ||
 		(i.Prev != nil && i.Prev.Next != i) {
 		return false
 	}
@@ -120,4 +123,10 @@ func (l *list) String() string {
 	}
 	s.WriteRune(']')
 	return s.String()
+}
+
+func (l *list) Clear() {
+	l.back = nil
+	l.front = nil
+	l.count = 0
 }
