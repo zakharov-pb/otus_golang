@@ -77,4 +77,19 @@ func TestList(t *testing.T) {
 		require.Equal(t, l.Len(), 2)
 		require.Equal(t, listStr, fmt.Sprintf("%v", l))
 	})
+
+	t.Run("get items", func(t *testing.T) {
+		l := NewList()
+
+		front := l.PushFront(100)
+		back := l.Back()
+
+		require.Equal(t, front, back)
+		require.Equal(t, front, l.Front())
+		require.Equal(t, l.Len(), 1)
+
+		back = l.PushBack(100)
+		require.Equal(t, back, l.Back())
+		require.Equal(t, l.Len(), 2)
+	})
 }
