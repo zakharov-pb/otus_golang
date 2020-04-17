@@ -18,10 +18,11 @@ func TestRun(t *testing.T) {
 		var runTasksCount int32
 
 		for i := 0; i < tasksCount; i++ {
+			e := fmt.Errorf("error from task %d", i)
 			tasks = append(tasks, func() error {
 				time.Sleep(time.Millisecond * time.Duration(rand.Intn(100)))
 				atomic.AddInt32(&runTasksCount, 1)
-				return fmt.Errorf("error from task %d", i)
+				return e
 			})
 		}
 
@@ -65,7 +66,7 @@ func TestRun(t *testing.T) {
 }
 
 func TestAdditionalRun(t *testing.T) {
-	t.Run("Number of tasks is less than goroutin and ignore errors", func(t *testing.T) {
+	t.Run("Number of tasks is less than goroutines and ignore errors", func(t *testing.T) {
 		tasksCount := 2
 		tasks := make([]Task, 0, tasksCount)
 
@@ -85,9 +86,9 @@ func TestAdditionalRun(t *testing.T) {
 		result := Run(tasks, workersCount, maxErrorsCount)
 
 		require.Equal(t, nil, result)
+		require.LessOrEqual(t, runTasksCount, int32(workersCount+maxErrorsCount), "extra tasks were started")
 	})
-
-	t.Run("Number of tasks is less than goroutin and without ignoring errors", func(t *testing.T) {
+	t.Run("Number of tasks is less than goroutines and with errors", func(t *testing.T) {
 		tasksCount := 2
 		tasks := make([]Task, 0, tasksCount)
 
@@ -106,7 +107,8 @@ func TestAdditionalRun(t *testing.T) {
 		maxErrorsCount := 0
 		result := Run(tasks, workersCount, maxErrorsCount)
 
-		require.Equal(t, ErrErrorsLimitExceeded, result)
+		require.Equal(t, nil, result)
+		require.LessOrEqual(t, runTasksCount, int32(workersCount+maxErrorsCount), "extra tasks were started")
 	})
 
 	t.Run("A large number of tasks", func(t *testing.T) {
@@ -129,6 +131,33 @@ func TestAdditionalRun(t *testing.T) {
 		result := Run(tasks, workersCount, maxErrorsCount)
 
 		require.Equal(t, nil, result)
+	})
+
+	t.Run("A large number of tasks with errors", func(t *testing.T) {
+		tasksCount := 100000
+		workersCount := 500
+		maxErrorsCount := 1000
+
+		tasks := make([]Task, 0, tasksCount)
+
+		var runTasksCount int32
+
+		for i := 0; i < tasksCount; i++ {
+			e := fmt.Errorf("error from task %d", i)
+			index := i
+			tasks = append(tasks, func() error {
+				time.Sleep(time.Millisecond * time.Duration(rand.Intn(100)))
+				atomic.AddInt32(&runTasksCount, 1)
+				if index > (workersCount - 1) {
+					return e
+				}
+				return nil
+			})
+		}
+		result := Run(tasks, workersCount, maxErrorsCount)
+
+		require.Equal(t, ErrErrorsLimitExceeded, result)
+		require.LessOrEqual(t, runTasksCount, int32(workersCount+maxErrorsCount), "extra tasks were started")
 	})
 
 }
