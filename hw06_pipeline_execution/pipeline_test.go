@@ -29,7 +29,7 @@ func CreateTester(id int, name string, info string) *Tester {
 		ID:      id,
 		Name:    name,
 		Info:    info,
-		Created: time.Date(2020, time.April, 1, 0, 0, 0, 0, time.Local),
+		Created: time.Date(2020, time.April, 1, 0, 0, 0, 0, time.UTC),
 	}
 }
 
@@ -134,7 +134,7 @@ func TestAdditionalPipeline(t *testing.T) {
 			`Unformatted     TeXt`,
 		),
 	}
-	reference := []string{"0.5", "HELLO WORLD!", "1000", "{'ID':1,'NAME':'USER 01','INFO':'UNFORMATTED TEXT','CREATED':'2020-04-01T00:00:00+03:00'}"}
+	reference := []string{"0.5", "HELLO WORLD!", "1000", "{'ID':1,'NAME':'USER 01','INFO':'UNFORMATTED TEXT','CREATED':'2020-04-01T00:00:00Z'}"}
 	// String stage generator
 	g := func(name string, f func(v string) string) Stage {
 		return func(in In) Out {
