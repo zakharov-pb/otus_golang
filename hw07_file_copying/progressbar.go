@@ -16,11 +16,13 @@ const (
 )
 
 var (
-	// ErrorProgressBarIsRun call error in method Run
-	ErrorProgressBarIsRun = errors.New("ProgressBar is already running")
+	// ErrProgressBarIsRun call error in method Run.
+	ErrProgressBarIsRun = errors.New("ProgressBar is already running")
+	// ErrSTTY invalid stty answer.
+	ErrSTTY = errors.New("error getting terminal width: Invalid stty answer")
 )
 
-// ProgressBar struct for displaying a process
+// ProgressBar struct for displaying a process.
 type ProgressBar struct {
 	progressCh chan int64
 	doneCh     chan struct{}
@@ -38,7 +40,7 @@ func getMaxSize() (size int64, err error) {
 	}
 	items := strings.Split(string(out), " ")
 	if len(items) < sttyResultCount {
-		return 0, fmt.Errorf("error getting terminal width: Invalid stty answer")
+		return 0, ErrSTTY
 	}
 	s, err := strconv.Atoi(items[1][:len(items[1])-1])
 	if err != nil {
@@ -63,10 +65,10 @@ func (p *ProgressBar) fillLine(progress int64) {
 	}
 }
 
-// Run start rendering, progress - channel for transferring the state of the process
+// Run start rendering, progress - channel for transferring the state of the process.
 func (p *ProgressBar) Run(label string, max int64) (progress chan<- int64, err error) {
 	if p.progressCh != nil {
-		return nil, ErrorProgressBarIsRun
+		return nil, ErrProgressBarIsRun
 	}
 	width, err := getMaxSize()
 	if err != nil || width < minSize {
@@ -88,7 +90,7 @@ func (p *ProgressBar) Run(label string, max int64) (progress chan<- int64, err e
 	p.line = make([]byte, countLine)
 	p.progressCh = make(chan int64)
 	p.doneCh = make(chan struct{})
-	p.wg.Add(1) // nolint
+	p.wg.Add(1) // nolint: gomnd
 	go func() {
 		defer func() {
 			fmt.Println()
@@ -117,7 +119,7 @@ func (p *ProgressBar) Run(label string, max int64) (progress chan<- int64, err e
 	return p.progressCh, nil
 }
 
-// Stop stop work
+// Stop stop work.
 func (p *ProgressBar) Stop() {
 	if p.doneCh == nil {
 		return

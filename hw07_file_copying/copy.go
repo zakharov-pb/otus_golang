@@ -14,9 +14,9 @@ const (
 )
 
 var (
-	// ErrUnsupportedFile unsupported file
+	// ErrUnsupportedFile unsupported file.
 	ErrUnsupportedFile = errors.New("unsupported file")
-	// ErrOffsetExceedsFileSize offset exceeds file size
+	// ErrOffsetExceedsFileSize offset exceeds file size.
 	ErrOffsetExceedsFileSize = errors.New("offset exceeds file size")
 )
 
@@ -37,7 +37,7 @@ func getFileSize(f *os.File) (int64, error) {
 	return fi.Size(), nil
 }
 
-// Copy function copy files
+// Copy function copy files.
 func Copy(fromPath string, toPath string, offset, limit int64) error {
 	fmt.Printf("\nFROM: %s\nTO: %s\n", fromPath, toPath)
 	out, err := os.Open(fromPath)
