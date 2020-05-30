@@ -18,5 +18,11 @@ func init() {
 
 func main() {
 	flag.Parse()
-	// Place your code here
+	if len(to) == 0 || len(from) == 0 {
+		flag.PrintDefaults()
+		return
+	}
+	if err := Copy(from, to, offset, limit); err != nil {
+		panic(err)
+	}
 }
