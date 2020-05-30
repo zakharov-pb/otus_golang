@@ -90,7 +90,6 @@ func (p *ProgressBar) Run(label string, max int64) (progress chan<- int64, err e
 	p.line = make([]byte, countLine)
 	p.progressCh = make(chan int64)
 	p.doneCh = make(chan struct{})
-	// nolint
 	p.wg.Add(1)
 	go func() {
 		defer func() {
