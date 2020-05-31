@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"os"
 	"os/exec"
+	"strings"
 	"testing"
 )
 
@@ -14,6 +15,54 @@ const (
 	pathCMD  = "./testCode/testEnv"
 	pathEnv  = "./testdata/env"
 )
+
+var ignoredEnv map[string]string
+
+func init() {
+	ignoredEnv = make(map[string]string)
+	for _, env := range os.Environ() {
+		nameValue := strings.SplitN(env, "=", 2)
+		ignoredEnv[nameValue[0]] = nameValue[1]
+	}
+}
+
+func TestRunInvalidParams(t *testing.T) {
+	clearEnv()
+	code := RunCmd(nil, nil)
+	if code != 0 {
+		t.Fatalf("error when cmd is nil")
+	}
+}
+
+func TestRunCmdWithoutEnv(t *testing.T) {
+	clearEnv()
+
+	if !createTestBinary() {
+		t.Fatalf("create test code")
+	}
+	defer os.RemoveAll(dirCode)
+
+	code := RunCmd([]string{pathCMD}, nil)
+	if code != 100 {
+		t.Fatalf("error when Environment is nil")
+	}
+}
+
+func TestRunCmd(t *testing.T) {
+	if !createTestBinary() {
+		t.Fatalf("create test code")
+	}
+	defer os.RemoveAll(dirCode)
+
+	e, err := ReadDir(pathEnv)
+	if err != nil {
+		t.Fatalf("error ReadDir %v", err)
+	}
+	code := RunCmd([]string{pathCMD}, e)
+	if code != 0 {
+		t.Fatalf("error call RunCmd")
+	}
+}
 
 func createTestBinary() bool {
 	code := []byte(`
@@ -51,32 +100,12 @@ func createTestBinary() bool {
 	return true
 }
 
-func clearEnv(e Environment) {
-	for k := range e {
-		os.Unsetenv(k)
-	}
-}
-
-func TestRunCmd(t *testing.T) {
-	if !createTestBinary() {
-		t.Fatalf("create test code")
-	}
-	defer os.RemoveAll(dirCode)
-	code := RunCmd(nil, nil)
-	if code != 0 {
-		t.Fatalf("error when cmd is nil")
-	}
-	e, err := ReadDir(pathEnv)
-	if err != nil {
-		t.Fatalf("error ReadDir %v", err)
-	}
-	code = RunCmd([]string{pathCMD}, e)
-	if code != 0 {
-		t.Fatalf("error call RunCmd")
-	}
-	clearEnv(e)
-	code = RunCmd([]string{pathCMD}, nil)
-	if code != 100 {
-		t.Fatalf("error when Environment is nil")
+func clearEnv() {
+	for _, env := range os.Environ() {
+		nameValue := strings.SplitN(env, "=", 2)
+		if _, ok := ignoredEnv[nameValue[0]]; ok {
+			continue
+		}
+		os.Unsetenv(nameValue[0])
 	}
 }
