@@ -19,12 +19,17 @@ type nameValue struct {
 	Error error
 }
 
+var (
+	// ErrCharacter forbidden character '=' in file name.
+	ErrCharacter = fmt.Errorf("forbidden character '=' in file name")
+)
+
 func readValueFromFile(dir string, name string, wg *sync.WaitGroup, result chan nameValue) {
 	defer wg.Done()
 	if strings.Contains(name, "=") {
 		result <- nameValue{
 			Name:  name,
-			Error: fmt.Errorf("error in %s: find symbol '=' in name", name),
+			Error: ErrCharacter,
 		}
 	}
 	file, err := os.Open(dir + name)
@@ -104,7 +109,7 @@ func ReadDir(dir string) (Environment, error) {
 	readerWg.Wait()
 
 	if len(errorsList) > 0 {
-		err = fmt.Errorf("errors ReadDir: %v", errorsList)
+		err = fmt.Errorf("errors ReadDir: %v", errorsList) // nolint
 	}
 	return res, err
 }
