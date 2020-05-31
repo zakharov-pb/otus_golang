@@ -4,6 +4,8 @@ import (
 	"io/ioutil"
 	"os"
 	"testing"
+
+	"github.com/stretchr/testify/require"
 )
 
 func TestReadDir(t *testing.T) {
@@ -14,25 +16,15 @@ func TestReadDir(t *testing.T) {
 
 		info, err := ReadDir(path)
 		if err != nil {
-			t.Fatal(err)
+			t.Fatalf("error ReadDir: %v", err)
 		}
-		if len(info) != 5 {
-			t.Fatal("error count")
+		expectedEnv := Environment{
+			"BAR":    "bar",
+			"FOO":    "   foo\nwith new line",
+			"UNSET":  "",
+			"HELLO":  `"hello"`,
+			"UNSET1": "ERROR",
 		}
-		if v, ok := info["BAR"]; !ok || v != "bar" {
-			t.Fatal("error get value BAR")
-		}
-		if v, ok := info["FOO"]; !ok || v != "   foo\nwith new line" {
-			t.Fatal("error get value FOO")
-		}
-		if v, ok := info["UNSET"]; !ok || len(v) > 0 {
-			t.Fatal("error get value UNSET")
-		}
-		if v, ok := info["HELLO"]; !ok || v != `"hello"` {
-			t.Fatal("error get value UNSET")
-		}
-		if v, ok := info["UNSET1"]; !ok || v != `ERROR` {
-			t.Fatal("error get value UNSET1")
-		}
+		require.Equal(t, expectedEnv, info)
 	})
 }
